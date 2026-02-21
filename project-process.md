@@ -5,9 +5,10 @@
 
 - [x] **Project Scaffolding:** Create `backend/` and `frontend/` directories.
 - [x] **API Foundation:** Set up FastAPI with `/analyze` endpoint.
+- [ ] **Lore Lakehouse:** Set up a Databricks workspace (Community Edition) or a local Delta Lake to store extracted character triplets.
 - [ ] **Prompt Engineering:** Fine-tune the extraction prompt to prevent Gemini from hallucinating relationships.
 - [ ] **Schema Validation:** Ensure the backend always returns valid JSON that the 3D graph can read.
-- [ ] **Lore Stress Test:** Test extraction with a massive chunk of text (e.g., the first chapter of a game script).
+- [ ] **Lore Stress Test:** Test extraction with a massive chunk of text.
 
 ### 🔵 Phase 2: The Face (Hours 8–16)
 *Focus: Immersive 3D visualization using Three.js.*
@@ -21,7 +22,8 @@
 ### 🟡 Phase 3: The Data Science "Magic" (Hours 16–28)
 *Focus: Adding the "Science" to Hacklytics.*
 
-- [ ] **Centrality Scoring:** Use NetworkX on the backend to calculate which characters are "Hubs" (make their nodes larger).
+- [ ] **Lakehouse Analytics:** Use Databricks SQL or Spark to run PageRank on the graph to find the "Narrative Hubs."
+- [ ] **Centrality Scoring:** Use NetworkX/Spark to calculate character importance (make their nodes larger).
 - [ ] **Community Detection:** Color-code nodes automatically based on "Factions" (using the Louvain algorithm).
 - [ ] **Interactive Lore Cards:** When a node is clicked, have Gemini generate a "Detective Dossier" summary for that character.
 - [ ] **Visual Polish:** Add neon glows, space backgrounds, or particle effects using Three.js primitives.

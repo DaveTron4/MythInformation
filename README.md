@@ -22,6 +22,7 @@ Video game stories (like *Elden Ring*, *The Witcher*, or *Destiny*) are increasi
 | Layer | Technologies |
 | :--- | :--- |
 | **The Brain** | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi) ![Gemini](https://img.shields.io/badge/Gemini_1.5_Flash-4285F4?style=flat-square&logo=google) ![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=flat-square) |
+| **The Data** | ![Databricks](https://img.shields.io/badge/Databricks-FF3621?style=flat-square&logo=databricks&logoColor=white) ![Apache Spark](https://img.shields.io/badge/Apache_Spark-E25A1C?style=flat-square&logo=apache-spark&logoColor=white) ![Sphinx.ai](https://img.shields.io/badge/Sphinx.ai-blue?style=flat-square) |
 | **The Face** | ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) ![Three.js](https://img.shields.io/badge/Three.js-000000?style=flat-square&logo=three.js&logoColor=white) |
 | **The Graph** | ![NetworkX](https://img.shields.io/badge/NetworkX-000000?style=flat-square) ![ForceGraph](https://img.shields.io/badge/3D_Force_Graph-red?style=flat-square) |
 
@@ -32,9 +33,6 @@ Video game stories (like *Elden Ring*, *The Witcher*, or *Destiny*) are increasi
 2.  **Neural Extraction:** Gemini 1.5 reads the text and extracts structured data (Nodes and Edges).
 3.  **Graph Synthesis:** The backend runs community detection algorithms to categorize characters into factions automatically.
 4.  **3D Visualization:** The data is rendered into a Three.js environment where users can zoom, rotate, and click nodes to view "Detective Dossiers" on specific characters.
-
-## 🏆 Why It Wins
-This project moves beyond simple "AI wrappers" by combining **Generative AI** with **Graph Theory**. It solves a real problem for gamers and creators by providing a tool that makes complex information both beautiful and searchable.
 
 ---
 **Developed Solo in 36 Hours for Hacklytics 2026.**
