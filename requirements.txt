@@ -1,0 +1,10 @@
+streamlit
+networkx
+langchain
+langchain-google-genai
+pandas
+beautifulsoup4
+requests
+python-dotenv
+streamlit-agraph
+pyvis

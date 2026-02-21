@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+langchain
+langchain-google-genai
+networkx
+python-dotenv
+requests
+beautifulsoup4
