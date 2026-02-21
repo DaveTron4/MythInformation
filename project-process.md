@@ -13,20 +13,21 @@
 ### 🔵 Phase 2: The Face (Hours 8–16)
 *Focus: Immersive 3D visualization using Three.js.*
 
-- [ ] **React Setup:** Initialize Vite + React and install `react-force-graph-3d`.
-- [ ] **The "Red String" Board:** Create a basic 3D canvas that renders nodes and links from a static JSON file.
-- [ ] **Live Connection:** Connect the React frontend to the FastAPI backend using `axios`.
-- [ ] **Input UI:** Build a cinematic text area for users to paste lore.
-- [ ] **Camera Controls:** Implement "Focus on Node" functionality (click a character to zoom into them).
+- [x] **React Setup:** Initialize Vite + React and install `react-force-graph-3d`.
+- [x] **The "Red String" Board:** Create a basic 3D canvas that renders nodes and links from a static JSON file.
+- [x] **Live Connection:** Connect the React frontend to the FastAPI backend using `axios`.
+- [x] **Input UI:** Build a cinematic text area for users to paste lore (Detective's Notebook).
+- [x] **Camera Controls:** Implement "Focus on Node" functionality (click a character to zoom into them).
 
 ### 🟡 Phase 3: The Data Science "Magic" (Hours 16–28)
 *Focus: Adding the "Science" to Hacklytics.*
 
 - [ ] **Lakehouse Analytics:** Use Databricks SQL or Spark to run PageRank on the graph to find the "Narrative Hubs."
-- [ ] **Centrality Scoring:** Use NetworkX/Spark to calculate character importance (make their nodes larger).
-- [ ] **Community Detection:** Color-code nodes automatically based on "Factions" (using the Louvain algorithm).
+- [x] **Centrality Scoring:** Use NetworkX/Spark to calculate character importance (make their nodes larger).
+- [x] **Multiversal Clustering:** Group characters into "Solar Systems" based on their source work.
+- [x] **Bridge Detection:** Visually identify crossover characters with multi-color segmented coronas.
 - [ ] **Interactive Lore Cards:** When a node is clicked, have Gemini generate a "Detective Dossier" summary for that character.
-- [ ] **Visual Polish:** Add neon glows, space backgrounds, or particle effects using Three.js primitives.
+- [x] **Visual Polish:** Added procedural starfield, glowing orbs, and photon particle beams.
 
 ### 🔴 Phase 4: The Final Pitch (Hours 28–36)
 *Focus: Stability and Presentation.*

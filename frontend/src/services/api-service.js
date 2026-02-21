@@ -32,5 +32,10 @@ export const apiService = {
   analyzeBook: async (limitChars = 5000) => {
     const response = await api.get(`/analyze-book?limit_chars=${limitChars}`);
     return response.data;
+  },
+
+  characterDossier: async (characterName) => {
+    const response = await api.get(`/character-dossier?name=${encodeURIComponent(characterName)}`);
+    return response.data;
   }
 };
