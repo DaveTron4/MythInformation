@@ -6,9 +6,9 @@
 - [x] **Project Scaffolding:** Create `backend/` and `frontend/` directories.
 - [x] **API Foundation:** Set up FastAPI with `/analyze` endpoint.
 - [ ] **Lore Lakehouse:** Set up a Databricks workspace (Community Edition) or a local Delta Lake to store extracted character triplets.
-- [ ] **Prompt Engineering:** Fine-tune the extraction prompt to prevent Gemini from hallucinating relationships.
-- [ ] **Schema Validation:** Ensure the backend always returns valid JSON that the 3D graph can read.
-- [ ] **Lore Stress Test:** Test extraction with a massive chunk of text.
+- [x] **Prompt Engineering:** Fine-tune the extraction prompt to prevent Gemini from hallucinating relationships.
+- [x] **Schema Validation:** Ensure the backend always returns valid JSON that the 3D graph can read.
+- [x] **Lore Stress Test:** Test extraction with a massive chunk of text.
 
 ### 🔵 Phase 2: The Face (Hours 8–16)
 *Focus: Immersive 3D visualization using Three.js.*
