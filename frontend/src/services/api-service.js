@@ -23,6 +23,14 @@ export const apiService = {
   },
 
   /**
+   * Fetch and analyze a specific Project Gutenberg book by ID
+   */
+  analyzeGutenberg: async (bookId, limitChars = 4000) => {
+    const response = await api.get(`/analyze-gutenberg/${bookId}?limit_chars=${limitChars}`);
+    return response.data;
+  },
+
+  /**
    * Fetch dossier with specific system context to avoid naming conflicts
    */
   getCharacterDossier: async (characterName, systemName = "Unknown") => {

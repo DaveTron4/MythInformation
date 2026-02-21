@@ -9,11 +9,13 @@ import os
 import traceback
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+from scraper import get_gutenberg_book
 
 load_dotenv()
 
 app = FastAPI(title="MythInformation API")
 
+# Enable CORS for React
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,6 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Models
 class LoreRequest(BaseModel):
     text: str
     api_key: Optional[str] = None
@@ -30,12 +33,17 @@ class GraphResponse(BaseModel):
     nodes: List[dict]
     links: List[dict]
 
-# Removed 'relationships' to avoid validation errors and redundancy
 class DossierResponse(BaseModel):
     name: str
     biography: str
     notable_events: List[str]
 
+# Health Check
+@app.get("/")
+def health_check():
+    return {"status": "MythInformation Brain is Active"}
+
+# Extraction Logic
 async def run_extraction(text: str, api_key: str):
     try:
         llm = ChatGoogleGenerativeAI(
@@ -44,8 +52,6 @@ async def run_extraction(text: str, api_key: str):
             temperature=0,
             max_output_tokens=8192
         )
-
-        parser = JsonOutputParser()
 
         prompt = PromptTemplate(
             template="""
@@ -67,7 +73,7 @@ async def run_extraction(text: str, api_key: str):
             input_variables=["text"],
         )
 
-        chain = prompt | llm | parser
+        chain = prompt | llm | JsonOutputParser()
         result = chain.invoke({"text": text})
 
         G = nx.Graph()
@@ -99,23 +105,25 @@ async def run_extraction(text: str, api_key: str):
 
     except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Extraction Error: {str(e)}")
 
+# Endpoints
 @app.post("/analyze", response_model=GraphResponse)
 async def analyze_lore(request: LoreRequest):
     api_key = request.api_key or os.getenv("GOOGLE_API_KEY")
     if not api_key: raise HTTPException(status_code=400, detail="API Key Missing")
     return await run_extraction(request.text, api_key)
 
-@app.get("/analyze-book", response_model=GraphResponse)
-async def analyze_local_book(limit_chars: int = 3000):
+@app.get("/analyze-gutenberg/{book_id}", response_model=GraphResponse)
+async def analyze_gutenberg(book_id: str, limit_chars: int = 100000):
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key: raise HTTPException(status_code=400, detail="API Key Missing")
-    file_path = "book_lore.txt"
-    if not os.path.exists(file_path): return {"nodes": [], "links": []}
-    with open(file_path, "r", encoding="utf-8") as f:
-        text = f.read()[:limit_chars]
-    return await run_extraction(text, api_key)
+    
+    text = get_gutenberg_book(book_id)
+    if text.startswith("Gutenberg Error"):
+        raise HTTPException(status_code=404, detail=text)
+        
+    return await run_extraction(text[:limit_chars], api_key)
 
 @app.get("/character-dossier/{character_name}", response_model=DossierResponse)
 async def character_dossier(character_name: str, system_name: str = "Unknown"):
@@ -125,7 +133,6 @@ async def character_dossier(character_name: str, system_name: str = "Unknown"):
     prompt = PromptTemplate(
         template="""
             You are a Multiversal Detective. Create a detailed dossier for the character "{character_name}" specifically from the work/system "{system_name}".
-            
             Return ONLY a valid JSON object.
             
             Structure:
