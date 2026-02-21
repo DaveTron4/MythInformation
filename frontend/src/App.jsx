@@ -170,7 +170,7 @@ function App() {
       </div>
 
       <NotebookPanel onAnalyze={handleCustomAnalyze} loading={loading} />
-      <DossierPanel selectedNode={selectedNode} onClose={() => setSelectedNode(null)} />
+      <DossierPanel selectedNode={selectedNode} allLinks={graphData.links} onClose={() => setSelectedNode(null)} />
 
       <ForceGraph3D
         ref={fgRef}

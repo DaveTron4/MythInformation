@@ -30,9 +30,14 @@ class GraphResponse(BaseModel):
     nodes: List[dict]
     links: List[dict]
 
+# Removed 'relationships' to avoid validation errors and redundancy
+class DossierResponse(BaseModel):
+    name: str
+    biography: str
+    notable_events: List[str]
+
 async def run_extraction(text: str, api_key: str):
     try:
-        # Setting up the LLM with the provided API key
         llm = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash",
             google_api_key=api_key,
@@ -45,8 +50,7 @@ async def run_extraction(text: str, api_key: str):
         prompt = PromptTemplate(
             template="""
             You are a Multiversal Detective. Extract characters and their relationships from the text.
-            
-            Return ONLY a valid JSON object. Do not include markdown formatting.
+            Return ONLY a valid JSON object.
             
             Structure:
             {{
@@ -100,62 +104,49 @@ async def run_extraction(text: str, api_key: str):
 @app.post("/analyze", response_model=GraphResponse)
 async def analyze_lore(request: LoreRequest):
     api_key = request.api_key or os.getenv("GOOGLE_API_KEY")
+    if not api_key: raise HTTPException(status_code=400, detail="API Key Missing")
     return await run_extraction(request.text, api_key)
 
 @app.get("/analyze-book", response_model=GraphResponse)
 async def analyze_local_book(limit_chars: int = 3000):
     api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key: raise HTTPException(status_code=400, detail="API Key Missing")
     file_path = "book_lore.txt"
-    if not os.path.exists(file_path):
-        return {"nodes": [], "links": []}
+    if not os.path.exists(file_path): return {"nodes": [], "links": []}
     with open(file_path, "r", encoding="utf-8") as f:
         text = f.read()[:limit_chars]
     return await run_extraction(text, api_key)
 
-@app.get("/character-dossier/{character_name}", response_model=GraphResponse)
-async def character_dossier(character_name: str):
+@app.get("/character-dossier/{character_name}", response_model=DossierResponse)
+async def character_dossier(character_name: str, system_name: str = "Unknown"):
     api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key: raise HTTPException(status_code=400, detail="API Key Missing")
+    
     prompt = PromptTemplate(
         template="""
-            You are a Multiversal Detective. Create a detailed dossier for the character "{character_name}" based on all known information.
+            You are a Multiversal Detective. Create a detailed dossier for the character "{character_name}" specifically from the work/system "{system_name}".
             
-            Include:
-            - A brief biography
-            - Key relationships with other characters
-            - Notable events they were involved in
-            
-            Return ONLY a valid JSON object. Do not include markdown formatting.
+            Return ONLY a valid JSON object.
             
             Structure:
             {{
-                "name": "Character Name",
+                "name": "{character_name}",
                 "biography": "Brief biography here.",
-                "relationships": [
-                {{"character": "Related Character", "relationship": "Type of Relationship"}}
-                ],
                 "notable_events": [
-                "Description of notable event 1",
-                "Description of notable event 2"
+                    "Description of event 1",
+                    "Description of event 2"
                 ]
             }}  
         """,
-        input_variables=["character_name"],
+        input_variables=["character_name", "system_name"],
     )
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        google_api_key=api_key,
-        temperature=0,
-        max_output_tokens=4096
-    )
-
-    parser = JsonOutputParser()
-    chain = prompt | llm | parser
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key=api_key, temperature=0)
+    chain = prompt | llm | JsonOutputParser()
     try:
-        result = chain.invoke({"character_name": character_name})
-        return result
+        return chain.invoke({"character_name": character_name, "system_name": system_name})
     except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

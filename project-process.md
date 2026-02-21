@@ -4,35 +4,35 @@
 *Focus: Getting Gemini to extract structured facts correctly.*
 
 - [x] **Project Scaffolding:** Create `backend/` and `frontend/` directories.
-- [x] **API Foundation:** Set up FastAPI with `/analyze` endpoint.
-- [ ] **Lore Lakehouse:** Set up a Databricks workspace (Community Edition) or a local Delta Lake to store extracted character triplets.
-- [x] **Prompt Engineering:** Fine-tune the extraction prompt to prevent Gemini from hallucinating relationships.
-- [x] **Schema Validation:** Ensure the backend always returns valid JSON that the 3D graph can read.
-- [x] **Lore Stress Test:** Test extraction with a massive chunk of text.
+- [x] **API Foundation:** Set up FastAPI with `/analyze` and `/character-dossier` endpoints.
+- [ ] **Lore Lakehouse:** Set up a Databricks workspace (Community Edition) or a local Delta Lake.
+- [x] **Prompt Engineering:** Optimized prompts for strict JSON and character disambiguation.
+- [x] **Schema Validation:** Pydantic models for both Graph and Dossier responses.
+- [x] **Lore Stress Test:** Verified extraction with 5,000+ character text blocks.
 
 ### 🔵 Phase 2: The Face (Hours 8–16)
 *Focus: Immersive 3D visualization using Three.js.*
 
-- [x] **React Setup:** Initialize Vite + React and install `react-force-graph-3d`.
-- [x] **The "Red String" Board:** Create a basic 3D canvas that renders nodes and links from a static JSON file.
-- [x] **Live Connection:** Connect the React frontend to the FastAPI backend using `axios`.
-- [x] **Input UI:** Build a cinematic text area for users to paste lore (Detective's Notebook).
-- [x] **Camera Controls:** Implement "Focus on Node" functionality (click a character to zoom into them).
+- [x] **React Setup:** Vite + React + `react-force-graph-3d`.
+- [x] **The "Red String" Board:** Dynamic 3D canvas with physics-based node layout.
+- [x] **Live Connection:** Full API integration via `apiService`.
+- [x] **Input UI:** Cyberpunk "Detective's Notebook" for custom lore analysis.
+- [x] **Camera Controls:** Smooth 2000ms transition zoom when clicking nodes.
 
 ### 🟡 Phase 3: The Data Science "Magic" (Hours 16–28)
 *Focus: Adding the "Science" to Hacklytics.*
 
-- [ ] **Lakehouse Analytics:** Use Databricks SQL or Spark to run PageRank on the graph to find the "Narrative Hubs."
-- [x] **Centrality Scoring:** Use NetworkX/Spark to calculate character importance (make their nodes larger).
-- [x] **Multiversal Clustering:** Group characters into "Solar Systems" based on their source work.
-- [x] **Bridge Detection:** Visually identify crossover characters with multi-color segmented coronas.
-- [ ] **Interactive Lore Cards:** When a node is clicked, have Gemini generate a "Detective Dossier" summary for that character.
-- [x] **Visual Polish:** Added procedural starfield, glowing orbs, and photon particle beams.
+- [ ] **Lakehouse Analytics:** Use Databricks SQL or Spark to run PageRank.
+- [x] **Centrality Scoring:** NetworkX calculates node size based on narrative importance.
+- [x] **Multiversal Clustering:** Fluid physics pull nodes into "Solar System" clusters.
+- [x] **Bridge Detection:** Segmented coronas show characters existing in 3+ systems simultaneously.
+- [x] **Interactive Lore Cards:** DossierPanel with rich Markdown rendering and real-time relationship filtering.
+- [x] **Visual Polish:** 20,000-point starfield and collision-based "liquid" physics.
 
 ### 🔴 Phase 4: The Final Pitch (Hours 28–36)
 *Focus: Stability and Presentation.*
 
-- [ ] **Error Handling:** Add a "loading" state (maybe a spinning magnifying glass) while Gemini is thinking.
-- [ ] **Deployment:** Host the backend on Render/Heroku and the frontend on Vercel.
-- [ ] **The Demo Video:** Record a screen capture of you turning a wall of text into a beautiful 3D web of secrets.
-- [ ] **ReadMe Polish:** Write a "Case File" for your project documentation on Devpost.
+- [ ] **Error Handling:** Advanced error states for API failures.
+- [ ] **Deployment:** Backend on Render, Frontend on Vercel.
+- [ ] **The Demo Video:** Capturing the multiversal expansion.
+- [ ] **ReadMe Polish:** Finalizing the "Case File" documentation.
