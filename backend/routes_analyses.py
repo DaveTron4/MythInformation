@@ -6,8 +6,10 @@ from database import get_db
 from models import User, Analysis
 from schemas import AnalysisCreate, AnalysisUpdate, AnalysisResponse, AnalysisListItem
 from auth import get_current_user
+from databricks_integration import DatabricksClient
 
 router = APIRouter(prefix="/analyses", tags=["Analyses"])
+db_client = None
 
 @router.post("", response_model=AnalysisResponse, status_code=status.HTTP_201_CREATED)
 async def create_analysis(
@@ -27,6 +29,18 @@ async def create_analysis(
     
     db.add(new_analysis)
     db.commit()
+    try:
+        global db_client
+        if db_client is None:
+            db_client = DatabricksClient()
+        db_client.log_analysis(
+            new_analysis.id,
+            current_user.id,
+            new_analysis.nodes,
+            new_analysis.links
+        )
+    except Exception as e:
+        print(f"Databricks logging failed: {e}")
     db.refresh(new_analysis)
     
     return new_analysis
