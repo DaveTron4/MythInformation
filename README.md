@@ -24,12 +24,128 @@
 ---
 
 ## 🚀 Key Features
+*   **User Authentication:** Secure JWT-based register/login system with password hashing via bcrypt.
+*   **Persistent Analysis Storage:** Save, load, and manage multiple lore analyses per user in PostgreSQL.
 *   **Multiversal Clustering:** Characters are automatically grouped into "Solar Systems" based on their source work (e.g., FNAF 1 vs. FNAF 2).
 *   **Star Magnitude:** Characters with more connections glow brighter and appear larger using **Degree Centrality** metrics.
 *   **Bridge Detection:** Characters appearing in multiple works are rendered with **Multi-Segment Segmented Coronas**, visually showing their multiversal history.
 *   **AI Case Files:** Click a node to decrypt a character's dossier, including an AI-generated biography and mission history, rendered with rich Markdown support.
 *   **Fluid Physics Engine:** Real-time collision detection and spring-forces create a "liquid" movement feel when adding new lore.
 *   **Procedural Starfield:** A native 20,000-point 3D background for a cinematic immersive experience.
+
+---
+
+## 🔧 Quick Start
+
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- Docker & Docker Compose
+- Google Gemini API key
+
+### Installation
+
+1. **Clone & Setup Backend:**
+   ```bash
+   cd backend
+   python -m venv venv
+   venv\Scripts\activate  # Windows
+   pip install -r requirements.txt
+   ```
+
+2. **Setup Environment Variables:**
+   ```bash
+   # backend/.env
+   GEMINI_API_KEY=your_gemini_key_here
+   DATABASE_URL=postgresql://loreuser:lorepass@localhost:5432/loredb
+   SECRET_KEY=your-secret-key-change-in-production
+   ```
+
+3. **Start PostgreSQL Docker Container:**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Run Backend Server:**
+   ```bash
+   cd backend
+   uvicorn main:app --reload
+   ```
+
+5. **Setup Frontend:**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+6. **Access Application:**
+   - Frontend: http://localhost:5173
+   - API Docs: http://127.0.0.1:8000/docs
+
+---
+
+## 📖 Usage
+
+### Analyzing Lore
+1. **Register/Login** using the button in bottom-right
+2. **Paste text** in the Detective's Notebook or search Project Gutenberg by ID
+3. **View the 3D Graph** as characters and relationships materialize
+4. **Click nodes** to view character dossiers
+5. **Delete systems** by clicking the ✕ next to their name
+
+### Saving & Loading
+1. **Click "💾 Save Analysis"** after building your graph
+2. **Name your analysis** and add notes
+3. **Click "📂 Load Analysis"** to browse your saved work
+4. **Load an analysis** to restore it and continue exploring
+
+---
+
+## 🗄️ Database Schema
+
+### Users Table
+- `id` - UUID primary key
+- `username` - Unique username
+- `email` - Unique email address
+- `hashed_password` - Bcrypt hash
+- `created_at` - Timestamp
+
+### Analyses Table
+- `id` - UUID primary key
+- `user_id` - Foreign key to users
+- `name` - Analysis title
+- `description` - User notes
+- `nodes` - JSON array of graph nodes
+- `links` - JSON array of graph edges
+- `work_meta` - JSON object with system metadata (colors, positions)
+- `created_at`, `updated_at` - Timestamps
+
+---
+
+## ✅ What's Working
+
+- ✅ Full 3D force-directed graph visualization with 20k-point starfield
+- ✅ Character extraction & relationship mapping via Google Gemini 2.5 Flash
+- ✅ Interactive node selection with smooth camera transitions
+- ✅ Rich character dossiers with Markdown support
+- ✅ Multi-work clustering with colored "Solar System" shells
+- ✅ User registration & login with JWT authentication
+- ✅ PostgreSQL-backed analysis persistence
+- ✅ Save/load analysis functionality with full state restoration
+- ✅ System deletion with proper link cleanup
+- ✅ Project Gutenberg book analysis integration
+- ✅ Cyberpunk UI with Tailwind theming
+- ✅ Comprehensive error handling and user feedback
+
+---
+
+## 🚧 Coming Next
+
+- 🎬 Demo video walkthrough
+- 🌐 Deployment (Backend to Render/Railway, Frontend to Vercel)
+- 📱 Mobile responsiveness (lower priority)
+- 📊 Optional: Databricks integration for advanced analytics
 
 ---
 **Developed Solo in 36 Hours for Hacklytics 2026.**

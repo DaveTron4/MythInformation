@@ -5,6 +5,11 @@ import * as d3 from 'd3-force';
 import { apiService } from './services/api-service';
 import DossierPanel from './components/DossierPanel';
 import NotebookPanel from './components/NotebookPanel';
+import ErrorBoundary from './components/ErrorBoundary';
+import AuthModal from './components/AuthModal';
+import SaveAnalysisModal from './components/SaveAnalysisModal';
+import SavedAnalysesPanel from './components/SavedAnalysesPanel';
+import { useAuth } from './contexts/AuthContext';
 
 const COLOR_PALETTE = ["#00ffcc", "#ff0055", "#0077ff", "#ffcc00", "#9900ff", "#ff6600", "#00ff00", "#ffffff"];
 
@@ -15,6 +20,11 @@ function App() {
   const [selectedNode, setSelectedNode] = useState(null);
   const [workMeta, setWorkMeta] = useState({});
   const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [error, setError] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showLoadPanel, setShowLoadPanel] = useState(false);
+  const { user, isAuthenticated, logout, token } = useAuth();
 
   useEffect(() => {
     const handleResize = () => setDimensions({ width: window.innerWidth, height: window.innerHeight });
@@ -75,15 +85,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const fetchInit = async () => {
-      setLoading(true);
-      try { const data = await apiService.analyzeBook(2000); mergeGraphData(data); }
-      catch (e) { console.error(e); } finally { setLoading(false); }
-    };
-    fetchInit();
-  }, [mergeGraphData]);
-
-  useEffect(() => {
     if (fgRef.current) {
       const scene = fgRef.current.scene();
       if (!scene.getObjectByName('starfield')) { starField.name = 'starfield'; scene.add(starField); }
@@ -107,17 +108,39 @@ function App() {
 
   const handleCustomAnalyze = async (text) => {
     setLoading(true);
-    try { const data = await apiService.analyzeLore(text); mergeGraphData(data); }
-    catch (e) { console.error(e); } finally { setLoading(false); }
+    setError(null);
+    try {
+      if (!text.trim()) {
+        setError("Text cannot be empty");
+        return;
+      }
+      if (text.length > 50000) {
+        setError("Text exceeds maximum length of 50,000 characters");
+        return;
+      }
+      const data = await apiService.analyzeLore(text);
+      mergeGraphData(data);
+    } catch (e) {
+      console.error("Analysis failed:", e);
+      setError(e.response?.data?.detail || e.message || "Failed to analyze text. Please check your input and try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGutenbergSearch = async (bookId, limitChars) => {
     setLoading(true);
+    setError(null);
     try {
+      if (!bookId.trim()) {
+        setError("Book ID cannot be empty");
+        return;
+      }
       const data = await apiService.analyzeGutenberg(bookId, limitChars);
       mergeGraphData(data);
     } catch (e) {
-      alert("Failed to sync archives. Ensure ID is valid.");
+      console.error("Gutenberg search failed:", e);
+      setError(e.response?.data?.detail || e.message || "Failed to fetch or analyze book. Ensure the ID is valid.");
     } finally {
       setLoading(false);
     }
@@ -130,6 +153,68 @@ function App() {
     setSelectedNode(node);
   }, [fgRef]);
 
+  const handleDeleteSystem = (systemName) => {
+    setWorkMeta(prevMeta => {
+      const newMeta = { ...prevMeta };
+      delete newMeta[systemName];
+      return newMeta;
+    });
+
+    setGraphData(prevData => {
+      // Filter nodes: keep only those that have other systems, or remove completely if only this system
+      const newNodes = prevData.nodes
+        .filter(node => {
+          const remaining = (node.workList || [node.work]).filter(w => w !== systemName);
+          return remaining.length > 0;
+        })
+        .map(node => {
+          const remaining = (node.workList || [node.work]).filter(w => w !== systemName);
+          return { ...node, workList: remaining };
+        });
+
+      // Filter links: keep only those where both source and target nodes exist
+      const nodeIds = new Set(newNodes.map(n => n.id));
+      const newLinks = prevData.links
+        .filter(link => {
+          const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+          const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+          return nodeIds.has(sourceId) && nodeIds.has(targetId);
+        })
+        .map(link => ({
+          ...link,
+          source: typeof link.source === 'object' ? link.source.id : link.source,
+          target: typeof link.target === 'object' ? link.target.id : link.target
+        }));
+
+      return { nodes: newNodes, links: newLinks };
+    });
+  };
+
+  const handleLoadAnalysis = (analysis) => {
+    const nodes = analysis.nodes || [];
+    let links = analysis.links || [];
+    
+    // Ensure links have proper source/target references
+    // Links from database may have source/target as IDs, need to reference node objects
+    const nodeMap = new Map();
+    nodes.forEach(node => nodeMap.set(node.id, node));
+    
+    links = links.map(link => ({
+      ...link,
+      source: typeof link.source === 'string' ? link.source : link.source?.id || link.source,
+      target: typeof link.target === 'string' ? link.target : link.target?.id || link.target
+    }));
+    
+    // Load nodes and links
+    setGraphData({
+      nodes,
+      links
+    });
+    
+    // Load work metadata
+    setWorkMeta(analysis.work_meta || {});
+  };
+
   const systemShells = useMemo(() => {
     return Object.entries(workMeta).map(([workName, meta]) => {
       const nodesInSystem = graphData.nodes.filter(n => n.workList?.includes(workName));
@@ -140,23 +225,106 @@ function App() {
 
   return (
     <div className="fixed inset-0 bg-[#000205] text-white font-mono overflow-hidden text-center">
+      {error && (
+        <div className="absolute top-5 left-1/2 transform -translate-x-1/2 z-50 p-4 border border-red-500 rounded-lg bg-black/95 shadow-[0_0_20px_rgba(255,0,0,0.5)] max-w-sm">
+          <div className="flex items-start gap-3">
+            <span className="text-red-500 text-xl shrink-0">⚠️</span>
+            <div className="text-left">
+              <p className="text-red-400 text-[11px] font-bold uppercase tracking-widest mb-1">Error</p>
+              <p className="text-gray-300 text-sm">{error}</p>
+            </div>
+            <button onClick={() => setError(null)} className="text-gray-500 hover:text-white shrink-0">✕</button>
+          </div>
+        </div>
+      )}
+      
       <div className="absolute top-5 left-5 z-20 p-5 border border-[#00ffcc] rounded-lg bg-black/90 shadow-[0_0_20px_rgba(0,255,204,0.3)] w-[320px]">
         <h1 className="m-0 text-[#00ffcc] text-2xl font-bold tracking-tighter italic border-b border-[#00ffcc]/30 pb-2 mb-3 text-center">MYTH INFORMATION</h1>
         <div className="p-2 bg-black/50 rounded border border-[#00ffcc]/20 mb-3 overflow-hidden text-left">
           <p className="text-[9px] text-[#00ffcc] mb-2 tracking-widest uppercase italic font-bold">Galaxies Synced:</p>
           <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto">
             {Object.keys(workMeta).map(name => (
-              <span key={name} className="text-[8px] px-2 py-0.5 rounded-full border truncate max-w-30" style={{ color: workMeta[name].color, borderColor: workMeta[name].color + '55', background: workMeta[name].color + '11' }}>
-                {name}
-              </span>
+              <div key={name} className="flex items-center gap-1 text-[8px] px-2 py-0.5 rounded-full border" style={{ color: workMeta[name].color, borderColor: workMeta[name].color + '55', background: workMeta[name].color + '11' }}>
+                <span className="truncate max-w-20">{name}</span>
+                <button 
+                  onClick={() => handleDeleteSystem(name)}
+                  className="hover:text-red-400 transition-colors shrink-0 font-bold text-[9px]"
+                  title="Delete system"
+                >
+                  ✕
+                </button>
+              </div>
             ))}
           </div>
         </div>
-        <button onClick={() => { setGraphData({ nodes: [], links: [] }); setWorkMeta({}); }} className="w-full py-1.5 px-2 border border-red-500 text-red-500 text-[9px] font-bold hover:bg-red-500/10 transition-all uppercase rounded">Purge Galaxy</button>
+        
+        {/* Action Buttons */}
+        <div className="space-y-2">
+          {isAuthenticated && (
+            <>
+              <button 
+                onClick={() => setShowSaveModal(true)}
+                disabled={graphData.nodes.length === 0}
+                className="w-full py-1.5 px-2 border border-[#00ffcc] text-[#00ffcc] text-[9px] font-bold hover:bg-[#00ffcc]/10 transition-all uppercase rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                💾 Save Analysis
+              </button>
+              <button 
+                onClick={() => setShowLoadPanel(true)}
+                className="w-full py-1.5 px-2 border border-blue-500 text-blue-500 text-[9px] font-bold hover:bg-blue-500/10 transition-all uppercase rounded"
+              >
+                📂 Load Analysis
+              </button>
+            </>
+          )}
+          <button onClick={() => { setGraphData({ nodes: [], links: [] }); setWorkMeta({}); }} className="w-full py-1.5 px-2 border border-red-500 text-red-500 text-[9px] font-bold hover:bg-red-500/10 transition-all uppercase rounded">Purge Galaxy</button>
+        </div>
       </div>
 
       <NotebookPanel onAnalyze={handleCustomAnalyze} onGutenbergSearch={handleGutenbergSearch} loading={loading} />
       <DossierPanel selectedNode={selectedNode} allLinks={graphData.links} onClose={() => setSelectedNode(null)} />
+
+      {/* Auth Button - Bottom Right */}
+      <div className="absolute bottom-5 right-5 z-20">
+        {isAuthenticated ? (
+          <div className="flex flex-col items-end gap-2">
+            <div className="px-3 py-1 bg-black/80 border border-[#00ffcc]/30 rounded text-[10px] text-[#00ffcc]">
+              Agent: <span className="font-bold">{user?.username}</span>
+            </div>
+            <button
+              onClick={logout}
+              className="px-6 py-2 border border-red-500 text-red-500 rounded font-bold text-sm uppercase tracking-wider hover:bg-red-500/10 transition-all shadow-[0_0_10px_rgba(255,0,85,0.3)]"
+            >
+              Logout
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className="px-6 py-2 border border-[#00ffcc] text-[#00ffcc] rounded font-bold text-sm uppercase tracking-wider hover:bg-[#00ffcc]/10 transition-all shadow-[0_0_10px_rgba(0,255,204,0.3)]"
+          >
+            Login
+          </button>
+        )}
+      </div>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+
+      {/* Save Analysis Modal */}
+      <SaveAnalysisModal 
+        isOpen={showSaveModal} 
+        onClose={() => setShowSaveModal(false)}
+        graphData={graphData}
+        workMeta={workMeta}
+      />
+
+      {/* Saved Analyses Panel */}
+      <SavedAnalysesPanel
+        isOpen={showLoadPanel}
+        onClose={() => setShowLoadPanel(false)}
+        onLoad={handleLoadAnalysis}
+      />
 
       <ForceGraph3D
         ref={fgRef} width={dimensions.width} height={dimensions.height}

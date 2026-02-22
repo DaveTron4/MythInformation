@@ -7,15 +7,18 @@ const DossierPanel = ({ selectedNode, allLinks, onClose }) => {
 
   const [dossierData, setDossierData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchDossier = async () => {
       try {
         setLoading(true);
+        setError(null);
         const data = await apiService.getCharacterDossier(selectedNode.id, selectedNode.work);
         setDossierData(data);
-      } catch (error) {
-        console.error("Error fetching dossier:", error);
+      } catch (err) {
+        console.error("Error fetching dossier:", err);
+        setError(err.response?.data?.detail || err.message || "Failed to load dossier");
         setDossierData(null);
       } finally {
         setLoading(false);
@@ -59,6 +62,31 @@ const DossierPanel = ({ selectedNode, allLinks, onClose }) => {
           <div className="py-10 text-center">
             <div className="animate-spin w-5 h-5 border-2 border-[#ff0055] border-t-transparent rounded-full mx-auto mb-4"></div>
             <p className="text-gray-500 text-[10px] uppercase tracking-widest animate-pulse">Accessing Data...</p>
+          </div>
+        ) : error ? (
+          <div className="py-6 text-center">
+            <p className="text-red-400 text-[11px] uppercase font-bold mb-3">⚠️ Data Retrieval Failed</p>
+            <p className="text-gray-400 text-[10px] leading-relaxed mb-4">{error}</p>
+            <button 
+              onClick={() => {
+                setError(null);
+                setLoading(true);
+                const fetchRetry = async () => {
+                  try {
+                    const data = await apiService.getCharacterDossier(selectedNode.id, selectedNode.work);
+                    setDossierData(data);
+                  } catch (err) {
+                    setError(err.response?.data?.detail || err.message || "Retry failed");
+                  } finally {
+                    setLoading(false);
+                  }
+                };
+                fetchRetry();
+              }}
+              className="px-3 py-1 text-[9px] bg-red-500/20 border border-red-500 text-red-400 rounded hover:bg-red-500/30 transition-colors"
+            >
+              RETRY
+            </button>
           </div>
         ) : (
           <div className="space-y-8">

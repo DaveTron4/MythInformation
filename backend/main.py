@@ -10,6 +10,9 @@ import traceback
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from scraper import get_gutenberg_book
+from database import init_db
+from routes_auth import router as auth_router
+from routes_analyses import router as analyses_router
 
 load_dotenv()
 
@@ -23,9 +26,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Initialize database tables on startup
+@app.on_event("startup")
+async def startup_event():
+    init_db()
+
+# Include routers
+app.include_router(auth_router)
+app.include_router(analyses_router)
+
 class LoreRequest(BaseModel):
     text: str
     api_key: Optional[str] = None
+    
+    def validate_text(self):
+        """Validate text input before processing."""
+        if not self.text or not self.text.strip():
+            raise ValueError("Text cannot be empty")
+        if len(self.text) > 50000:
+            raise ValueError("Text exceeds maximum length of 50,000 characters")
+        return True
 
 class GraphResponse(BaseModel):
     nodes: List[dict]
@@ -111,36 +131,54 @@ async def run_extraction(text: str, api_key: str):
 
 @app.post("/analyze", response_model=GraphResponse)
 async def analyze_lore(request: LoreRequest):
+    try:
+        request.validate_text()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid input: {str(e)}")
+    
     api_key = request.api_key or os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="API key not configured. Set GOOGLE_API_KEY environment variable.")
+    
     return await run_extraction(request.text, api_key)
 
 @app.get("/analyze-gutenberg/{book_id}", response_model=GraphResponse)
 async def analyze_gutenberg(book_id: str, limit_chars: int = 100000):
     api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="API key not configured.")
+    
     text = get_gutenberg_book(book_id)
     if text.startswith("Gutenberg Error"):
-        raise HTTPException(status_code=404, detail=text)
+        raise HTTPException(status_code=500, detail=text)
     
     return await run_extraction(text[:limit_chars], api_key)
 
 @app.get("/character-dossier/{character_name}", response_model=DossierResponse)
 async def character_dossier(character_name: str, system_name: str = "Unknown"):
     api_key = os.getenv("GOOGLE_API_KEY")
-    prompt = PromptTemplate(
-        template="""
-            You are a Multiversal Detective. Create a dossier for character "{character_name}" from "{system_name}".
-            Return ONLY a valid JSON object.
-            {{
-                "name": "{character_name}",
-                "biography": "Brief bio.",
-                "notable_events": ["Event 1"]
-            }}  
-        """,
-        input_variables=["character_name", "system_name"],
-    )
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key=api_key, temperature=0)
-    chain = prompt | llm | JsonOutputParser()
-    return chain.invoke({"character_name": character_name, "system_name": system_name})
+    if not api_key:
+        raise HTTPException(status_code=500, detail="API key not configured.")
+    
+    try:
+        prompt = PromptTemplate(
+            template="""
+                You are a Multiversal Detective. Create a dossier for character "{character_name}" from "{system_name}".
+                Return ONLY a valid JSON object.
+                {{
+                    "name": "{character_name}",
+                    "biography": "Brief bio.",
+                    "notable_events": ["Event 1"]
+                }}  
+            """,
+            input_variables=["character_name", "system_name"],
+        )
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key=api_key, temperature=0)
+        chain = prompt | llm | JsonOutputParser()
+        return chain.invoke({"character_name": character_name, "system_name": system_name})
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Dossier generation failed: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

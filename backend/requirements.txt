@@ -1,9 +1,17 @@
 fastapi
 uvicorn
 pydantic
+pydantic[email]
 langchain
 langchain-google-genai
 networkx
 python-dotenv
 requests
 beautifulsoup4
+sqlalchemy
+psycopg2-binary
+passlib[bcrypt]
+bcrypt==4.0.1
+python-jose[cryptography]
+python-multipart
+email-validator
