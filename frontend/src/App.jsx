@@ -3,6 +3,7 @@ import ForceGraph3D from 'react-force-graph-3d';
 import * as THREE from 'three';
 import * as d3 from 'd3-force';
 import { apiService } from './services/api-service';
+import logo from './assets/logo.png';
 import DossierPanel from './components/DossierPanel';
 import NotebookPanel from './components/NotebookPanel';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -239,7 +240,10 @@ function App() {
       )}
       
       <div className="absolute top-5 left-5 z-20 p-5 border border-[#00ffcc] rounded-lg bg-black/90 shadow-[0_0_20px_rgba(0,255,204,0.3)] w-[320px]">
-        <h1 className="m-0 text-[#00ffcc] text-2xl font-bold tracking-tighter italic border-b border-[#00ffcc]/30 pb-2 mb-3 text-center">MYTH INFORMATION</h1>
+        <div className="flex items-center justify-center gap-3 mb-3 border-b border-[#00ffcc]/30 pb-2">
+          <img src={logo} alt="MythInformation Logo" className="h-12 w-12 object-contain" />
+          <h1 className="m-0 text-[#00ffcc] text-2xl font-bold tracking-tighter italic">MYTH INFORMATION</h1>
+        </div>
         <div className="p-2 bg-black/50 rounded border border-[#00ffcc]/20 mb-3 text-left">
           <p className="text-[9px] text-[#00ffcc] mb-2 tracking-widest uppercase italic font-bold">Galaxies Synced:</p>
           <div className="flex flex-wrap gap-1 max-h-10 overflow-y-auto pr-2 custom-scrollbar">

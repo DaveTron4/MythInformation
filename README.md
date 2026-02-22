@@ -1,17 +1,34 @@
-# 🕵️‍♂️ MythInformation.tech
+<div align="center">
+<table>
+<tr>
+<td width="40%" align="center">
+<img src="frontend/src/assets/logo.png" alt="MythInformation Logo" width="300" height="300" />
+</td>
+<td width="60%" align="left">
+
+## 🕵️‍♂️ MythInformation
 ### *Bringing Lore and Order to the Multiverse.*
 
+An AI-powered "Story Detective" that transforms chaotic wiki articles and scripts into interactive 3D **Galactic Knowledge Graphs**. Extract characters and relationships with Gemini, predict relationship types with ML, and analyze patterns in Databricks.
+
+### 🏆 Event
 [![Hackathon](https://img.shields.io/badge/Hacklytics-2026-yellow?style=for-the-badge&logo=data-science)](https://hacklytics.io/)
 [![Track](https://img.shields.io/badge/Track-Entertainment-blueviolet?style=for-the-badge)](https://hacklytics.io/)
+
+### 🛠️ Technologies
 [![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)](https://reactjs.org/)
 [![Three.js](https://img.shields.io/badge/three.js%20-%23000000.svg?style=for-the-badge&logo=three.dot-js&logoColor=white)](https://threejs.org/)
+
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
 [![Databricks](https://img.shields.io/badge/Databricks-FF3621?style=for-the-badge&logo=databricks&logoColor=white)](https://www.databricks.com/)
 [![Scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 
-**MythInformation.tech** is an AI-powered "Story Detective" designed to navigate the dense, non-linear lore of modern franchises. By transforming chaotic wiki articles and scripts into interactive 3D **Galactic Knowledge Graphs**, it reveals hidden connections and secret alliances that even the most dedicated fans might miss.
+</td>
+</tr>
+</table>
+</div>
 
 ---
 
