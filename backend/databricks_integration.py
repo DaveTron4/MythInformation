@@ -12,7 +12,6 @@ class DatabricksClient:
         self.catalog = os.getenv("DATABRICKS_CATALOG")
         self.schema = os.getenv("DATABRICKS_SCHEMA")
         self._lock = threading.Lock()
-        self._connect()
 
     def _connect(self):
         """Lazy connection initialization"""
@@ -38,6 +37,8 @@ class DatabricksClient:
     def _insert_data(self, analysis_id: str, user_id: str, nodes: list, links: list):
         """Internal method to insert data (runs in background thread)"""
         try:
+            if not self.conn:
+                self._connect()
             if not self.conn:
                 logger.warning("Databricks connection not available, skipping logging")
                 return
@@ -127,7 +128,3 @@ class DatabricksClient:
         )
         thread.start()
         logger.info(f"Background task started to log analysis {analysis_id}")
-
-
-# Global client instance (optional - for shared connection)
-db_client = DatabricksClient()
