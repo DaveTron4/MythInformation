@@ -240,9 +240,9 @@ function App() {
       
       <div className="absolute top-5 left-5 z-20 p-5 border border-[#00ffcc] rounded-lg bg-black/90 shadow-[0_0_20px_rgba(0,255,204,0.3)] w-[320px]">
         <h1 className="m-0 text-[#00ffcc] text-2xl font-bold tracking-tighter italic border-b border-[#00ffcc]/30 pb-2 mb-3 text-center">MYTH INFORMATION</h1>
-        <div className="p-2 bg-black/50 rounded border border-[#00ffcc]/20 mb-3 overflow-hidden text-left">
+        <div className="p-2 bg-black/50 rounded border border-[#00ffcc]/20 mb-3 text-left">
           <p className="text-[9px] text-[#00ffcc] mb-2 tracking-widest uppercase italic font-bold">Galaxies Synced:</p>
-          <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto">
+          <div className="flex flex-wrap gap-1 max-h-10 overflow-y-auto pr-2 custom-scrollbar">
             {Object.keys(workMeta).map(name => (
               <div key={name} className="flex items-center gap-1 text-[8px] px-2 py-0.5 rounded-full border" style={{ color: workMeta[name].color, borderColor: workMeta[name].color + '55', background: workMeta[name].color + '11' }}>
                 <span className="truncate max-w-20">{name}</span>
@@ -282,7 +282,19 @@ function App() {
       </div>
 
       <NotebookPanel onAnalyze={handleCustomAnalyze} onGutenbergSearch={handleGutenbergSearch} loading={loading} />
-      <DossierPanel selectedNode={selectedNode} allLinks={graphData.links} onClose={() => setSelectedNode(null)} />
+      <DossierPanel 
+        selectedNode={selectedNode} 
+        allLinks={graphData.links} 
+        allNodes={graphData.nodes}
+        workMeta={workMeta}
+        onClose={() => setSelectedNode(null)}
+        onAddLink={(newLink) => {
+          setGraphData(prevData => ({
+            ...prevData,
+            links: [...prevData.links, newLink]
+          }));
+        }}
+      />
 
       {/* Auth Button - Bottom Right */}
       <div className="absolute bottom-5 right-5 z-20">

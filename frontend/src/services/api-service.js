@@ -159,5 +159,30 @@ export const apiService = {
     await api.delete(`/analyses/${analysisId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
+  },
+
+  // ==================== ML Predictions ====================
+
+  /**
+   * Predict relationship type between two characters
+   */
+  predictRelationshipType: async (sourceCentrality, targetCentrality, sourceNameLength, targetNameLength, sameWork, sourceInWork) => {
+    return withRetry(() =>
+      api.post('/predict/relationship-type', {
+        source_centrality: sourceCentrality,
+        target_centrality: targetCentrality,
+        source_name_length: sourceNameLength,
+        target_name_length: targetNameLength,
+        same_work: sameWork,
+        source_in_work: sourceInWork
+      })
+    );
+  },
+
+  /**
+   * Check if ML model is loaded
+   */
+  checkMLHealth: async () => {
+    return withRetry(() => api.get('/predict/health'));
   }
 };

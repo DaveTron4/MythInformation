@@ -13,6 +13,8 @@ from scraper import get_gutenberg_book
 from database import init_db
 from routes_auth import router as auth_router
 from routes_analyses import router as analyses_router
+from routes_ml import router as ml_router
+from ml_predictor import predictor
 
 load_dotenv()
 
@@ -26,14 +28,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize database tables on startup
+# Initialize database and ML model on startup
 @app.on_event("startup")
 async def startup_event():
     init_db()
+    # Load ML model (optional - will work without it)
+    try:
+        predictor.load_model()
+    except Exception as e:
+        print(f"Warning: ML model failed to load: {e}")
 
 # Include routers
 app.include_router(auth_router)
 app.include_router(analyses_router)
+app.include_router(ml_router)
 
 class LoreRequest(BaseModel):
     text: str

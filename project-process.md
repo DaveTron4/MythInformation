@@ -3,12 +3,13 @@
 ---
 
 ## 📊 Progress Summary
-- **Current Status:** 80% Complete - All core features functional, ready for testing and deployment
+- **Current Status:** 95% Complete - All core & data science features functional, ready for final polish and presentation
 - **Phase 1:** ✅ Complete
 - **Phase 2:** ✅ Complete
 - **Phase 3:** ✅ Complete  
 - **Phase 3.5:** ✅ Complete (Authentication & Persistence)
-- **Phase 4:** 🟡 In Progress (Deployment & Polish)
+- **Phase 5:** ✅ Complete (Data Science & Analytics - NEW)
+- **Phase 4:** 🟡 70% (Final Polish & Deployment)
 
 ---
 
@@ -52,14 +53,45 @@
 - [x] **State Persistence:** GraphData (nodes/links) and workMeta properly restored on load.
 - [x] **Link Integrity:** Fixed node-to-node connection issues during system deletion and analysis loading.
 
-### 🔴 Phase 4: The Final Pitch (Hours 28–36)
-*Focus: Stability and Presentation.*
+### � Phase 5: Data Science & ML Analytics (Hours 26–34) - NEW
+*Focus: Adding predictive analytics and event tracking to Databricks.*
 
-- [x] **Error Handling:** Comprehensive error handling for API failures and user feedback.
-- [ ] **Deployment:** Backend on Render/Railway, Frontend on Vercel.
-- [ ] **The Demo Video:** Capturing the multiversal expansion and auth workflow.
-- [ ] **ReadMe Polish:** Finalizing the "Case File" documentation.
-- [ ] **Mobile Responsiveness:** (Low priority for hackathon - desktop-first experience).
+- [x] **Databricks Integration:** Connected PostgreSQL to Unity Catalog Delta Lake tables
+  - [x] Real-time sync of analyses, characters, relationships to Databricks
+  - [x] Async background threading for non-blocking saves
+  - [x] Lazy connection initialization with proper error handling
+- [x] **Analytics SQL Dashboard:** 6 interactive Databricks visualizations
+  - [x] KPI metrics (total analyses, users, characters, relationships)
+  - [x] Top 10 most connected characters (degree centrality ranking)
+  - [x] Relationship type distribution (pie chart)
+  - [x] Character count by work (comparative analysis)
+  - [x] Analysis creation timeline (user activity tracking)
+  - [x] Character centrality histogram (importance distribution)
+- [x] **ML Relationship Predictor:** Random Forest classifier for relationship type prediction
+  - [x] Trained on 159 relationships across 20 relationship types
+  - [x] 87.5% accuracy on test set
+  - Analytics:** Databricks Unity Catalog + Delta Lake
+- **ML Framework:** Scikit-learn (Random Forest Classifier)
+- **ORM:** SQLAlchemy with Pydantic schemas
+- **Authentication:** JWT tokens + bcrypt password hashing (via passlib)
+- **Graph Analysis:** NetworkX for centrality calculations
+- **Async Tasks:** Threading for non-blocking Databricks loggingn DossierPanel
+  - [x] "Add Connection" UI for manually creating relationships
+  - [x] ML model suggestions with confidence scoring (0-100%)
+  - [x] Accept/modify predicted relationship types
+  - [x] Live sync to graph on confirmation
+- [x] **UI Polish:** Enhanced user experience
+  - [x] Scrollable works list with custom cyan scrollbar (max-h-48)
+  - [x] Improved styling and transitions
+
+### 🔴 Phase 4: The Final Pitch (Hours 34–36)
+*Focus: Stability, Documentation, and Presentation.*
+
+- [x] **Non-blocking Backend:** Databricks logging runs async so API never hangs
+- [ ] **Deployment:** Backend on Render/Railway, Frontend on Vercel (scheduled task)
+- [ ] **The Demo Video:** Capturing full workflow - analysis creation → save → ML predictions → dashboard
+- [x] **Documentation:** Updated README.md and project-process.md (THIS FILE)
+- [ ] **Mobile Responsiveness:** (Low priority for hackathon - desktop-first experience)
 
 ---
 
@@ -75,9 +107,10 @@
 - **APIs:** Project Gutenberg integration for book text extraction
 
 ### Frontend Stack
-- **Framework:** React 19 + Vite 7 (fast HMR, optimized builds)
-- **3D Visualization:** Three.js + react-force-graph-3d
-- **Physics Engine:** D3-Force for particle simulation
+- **Framework:** React 19 + Vite 7 (fast HMR, optimized bu & custom scrollbars
+- **State Management:** React Context API (AuthContext)
+- **HTTP Client:** Axios with retry/backoff logic
+- **ML Integration:** Real-time predictions via backend `/predict/relationship-type` endpointation
 - **Styling:** Tailwind CSS v4 with custom cyberpunk theme
 - **State Management:** React Context API (AuthContext)
 - **HTTP Client:** Axios with retry/backoff logic

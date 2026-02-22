@@ -2,12 +2,18 @@ import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { apiService } from '../services/api-service';
 
-const DossierPanel = ({ selectedNode, allLinks, onClose }) => {
+const DossierPanel = ({ selectedNode, allLinks, allNodes, workMeta, onClose, onAddLink }) => {
   if (!selectedNode) return null;
 
   const [dossierData, setDossierData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAddConnection, setShowAddConnection] = useState(false);
+  const [selectedTarget, setSelectedTarget] = useState(null);
+  const [prediction, setPrediction] = useState(null);
+  const [predictLoading, setPredictLoading] = useState(false);
+  const [customLabel, setCustomLabel] = useState('');
+  const [mlReady, setMlReady] = useState(false);
 
   useEffect(() => {
     const fetchDossier = async () => {
@@ -25,12 +31,86 @@ const DossierPanel = ({ selectedNode, allLinks, onClose }) => {
       }
     };
     fetchDossier();
+
+    // Check if ML model is available
+    const checkML = async () => {
+      try {
+        const health = await apiService.checkMLHealth();
+        setMlReady(health.ml_model_loaded);
+      } catch (err) {
+        console.log("ML model not available");
+        setMlReady(false);
+      }
+    };
+    checkML();
   }, [selectedNode]);
 
   const localConnections = (allLinks || []).filter(link => {
     const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
     const targetId = typeof link.target === 'object' ? link.target.id : link.target;
     return sourceId === selectedNode.id || targetId === selectedNode.id;
+  });
+
+  // Get prediction when target is selected
+  const handleTargetSelect = async (targetId) => {
+    setSelectedTarget(targetId);
+    setCustomLabel('');
+    setPrediction(null);
+    
+    if (!mlReady || !targetId) return;
+
+    setPredictLoading(true);
+    try {
+      const sourceNode = selectedNode;
+      const targetNode = allNodes.find(n => n.id === targetId);
+      
+      const prediction = await apiService.predictRelationshipType(
+        sourceNode.size ? sourceNode.size / 100 : 0.1, // normalize to ~0-1 scale
+        targetNode.size ? targetNode.size / 100 : 0.1,
+        sourceNode.id.length,
+        targetNode.id.length,
+        (sourceNode.work === targetNode.work) ? 1 : 0,
+        (sourceNode.work === selectedNode.work) ? 1 : 0
+      );
+      
+      setPrediction(prediction);
+      setCustomLabel(prediction.predicted_relationship);
+    } catch (err) {
+      console.error("Prediction failed:", err);
+      setPrediction(null);
+    } finally {
+      setPredictLoading(false);
+    }
+  };
+
+  const handleAddConnection = () => {
+    if (!selectedTarget || !customLabel) return;
+
+    const newLink = {
+      source: selectedNode.id,
+      target: selectedTarget,
+      label: customLabel
+    };
+
+    onAddLink(newLink);
+    setSelectedTarget(null);
+    setCustomLabel('');
+    setPrediction(null);
+    setShowAddConnection(false);
+  };
+
+  // Get available target nodes (exclude self and already connected)
+  const availableTargets = (allNodes || []).filter(node => {
+    if (node.id === selectedNode.id) return false;
+    const alreadyConnected = localConnections.some(link => {
+      const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+      const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+      return (
+        (sourceId === selectedNode.id && targetId === node.id) ||
+        (sourceId === node.id && targetId === selectedNode.id)
+      );
+    });
+    return !alreadyConnected;
   });
 
   return (
@@ -120,6 +200,80 @@ const DossierPanel = ({ selectedNode, allLinks, onClose }) => {
                 </ul>
               ) : (
                 <p className="text-gray-600 italic text-[10px] text-left">Isolated entity.</p>
+              )}
+              
+              {!showAddConnection && (
+                <button
+                  onClick={() => setShowAddConnection(true)}
+                  className="mt-3 w-full py-1 px-2 text-[9px] bg-[#00ffcc]/10 border border-[#00ffcc] text-[#00ffcc] rounded hover:bg-[#00ffcc]/20 transition-colors font-bold uppercase"
+                >
+                  + Add Connection
+                </button>
+              )}
+              
+              {showAddConnection && (
+                <div className="mt-4 p-3 bg-white/5 border border-[#00ffcc]/30 rounded space-y-2">
+                  <label className="text-[9px] text-[#00ffcc] font-bold uppercase block">Select Target Character:</label>
+                  <select
+                    value={selectedTarget || ''}
+                    onChange={(e) => handleTargetSelect(e.target.value)}
+                    className="w-full p-1.5 text-[10px] bg-black/50 border border-[#00ffcc]/50 text-white rounded focus:border-[#00ffcc] focus:outline-none"
+                  >
+                    <option value="">Choose a character...</option>
+                    {availableTargets.map(node => (
+                      <option key={node.id} value={node.id}>{node.id}</option>
+                    ))}
+                  </select>
+
+                  {selectedTarget && (
+                    <div className="mt-3 pt-3 border-t border-[#00ffcc]/20 space-y-2">
+                      {predictLoading ? (
+                        <div className="text-center py-2">
+                          <div className="animate-spin w-3 h-3 border border-[#00ffcc] border-t-transparent rounded-full mx-auto mb-1"></div>
+                          <p className="text-[8px] text-[#00ffcc] animate-pulse">Analyzing relationship...</p>
+                        </div>
+                      ) : prediction ? (
+                        <div className="bg-[#00ffcc]/10 border border-[#00ffcc]/50 rounded p-2">
+                          <p className="text-[8px] text-[#00ffcc] uppercase font-bold mb-1">🤖 AI Prediction:</p>
+                          <p className="text-[10px] text-white font-bold">{prediction.predicted_relationship}</p>
+                          <p className="text-[8px] text-gray-400 mt-1">Confidence: {(prediction.confidence * 100).toFixed(0)}%</p>
+                        </div>
+                      ) : (
+                        mlReady && <p className="text-[8px] text-gray-500 italic">No prediction available</p>
+                      )}
+
+                      <label className="text-[9px] text-[#00ffcc] font-bold uppercase block pt-2">Relationship Type:</label>
+                      <input
+                        type="text"
+                        value={customLabel}
+                        onChange={(e) => setCustomLabel(e.target.value)}
+                        placeholder="e.g., knows, is parent of, betrays..."
+                        className="w-full p-1.5 text-[10px] bg-black/50 border border-[#ff0055]/50 text-white rounded focus:border-[#ff0055] focus:outline-none placeholder-gray-600"
+                      />
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={handleAddConnection}
+                          disabled={!customLabel}
+                          className="flex-1 py-1 px-2 text-[9px] bg-[#00ffcc]/20 border border-[#00ffcc] text-[#00ffcc] rounded hover:bg-[#00ffcc]/30 transition-colors font-bold uppercase disabled:opacity-50"
+                        >
+                          ✓ Link
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowAddConnection(false);
+                            setSelectedTarget(null);
+                            setCustomLabel('');
+                            setPrediction(null);
+                          }}
+                          className="flex-1 py-1 px-2 text-[9px] bg-red-500/20 border border-red-500 text-red-400 rounded hover:bg-red-500/30 transition-colors font-bold uppercase"
+                        >
+                          ✕ Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </section>
 
