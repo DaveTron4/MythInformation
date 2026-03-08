@@ -11,6 +11,10 @@
 
 An AI-powered "Story Detective" that transforms chaotic wiki articles and scripts into interactive 3D **Galactic Knowledge Graphs**. Extract characters and relationships with Gemini, predict relationship types with ML, and analyze patterns in Databricks.
 
+#### Try it Here:
+[MythInformation Site](https://myth-information.vercel.app/)
+IMPORTANT: Backend is hosted on free-tier Render, so it times out after a while. Give a couple of minutes for the backend to start.
+
 ### 🏆 Event
 [![Hackathon](https://img.shields.io/badge/Hacklytics-2026-yellow?style=for-the-badge&logo=data-science)](https://hacklytics.io/)
 [![Track](https://img.shields.io/badge/Track-Entertainment-blueviolet?style=for-the-badge)](https://hacklytics.io/)
