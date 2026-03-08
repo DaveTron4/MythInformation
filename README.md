@@ -13,6 +13,7 @@ An AI-powered "Story Detective" that transforms chaotic wiki articles and script
 
 #### Try it Here:
 [MythInformation Site](https://myth-information.vercel.app/)
+
 IMPORTANT: Backend is hosted on free-tier Render, so it times out after a while. Give a couple of minutes for the backend to start.
 
 ### 🏆 Event
